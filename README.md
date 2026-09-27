@@ -10,6 +10,16 @@ pip install -r requirements.txt
 
 Requires Python 3.12 on Windows. Backend deps: `psutil`, `pywin32`. UI deps (your side): `pystray`, `pillow`.
 
+## App (.exe)
+
+Build it yourself (needs `pip install pyinstaller`):
+
+```sh
+pyinstaller --noconfirm --clean --onefile --windowed --name prevstate --icon assets\icon.ico --hidden-import win32gui --hidden-import win32process --hidden-import win32api --collect-all pystray --collect-all PIL prevstate\__main__.py
+```
+
+Run `dist\prevstate.exe` — it lives in the tray. `dist/` and `build/` are gitignored; `assets/icon.ico` and `prevstate.spec` are committed so the build is reproducible.
+
 ## Usage
 
 Tray app (matches `design/prevstate-suite-canvas.png`):
