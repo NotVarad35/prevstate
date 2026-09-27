@@ -33,10 +33,12 @@ def collect_snapshot():
     apps = []
     for w in wins:
         meta = pid_meta.get(w["pid"], {})
-        # Skip our own snapshot console to reduce noise? Keep — cheap to filter in GUI.
+        # Per-instance disambiguation for the UI: same exe, N windows ->
+        # the label (title + size/position) tells them apart.
         apps.append({
             "title": w["title"], "rect": w["rect"], "pid": w["pid"],
             "exe": meta.get("exe", ""), "name": meta.get("name", ""),
+            "label": _app_label(w["title"], w["rect"]),
         })
 
     chrome_data = chrome_mod.get_chrome_tabs()
@@ -51,6 +53,14 @@ def collect_snapshot():
         "summary": build_summary(apps, chrome_data, terms),
     }
     return snapshot
+
+
+def _app_label(title, rect):
+    try:
+        x0, y0, x1, y1 = rect
+        return f"{title} — {x1 - x0}x{y1 - y0} @ {x0},{y0}"[:300]
+    except Exception:
+        return title[:300]
 
 
 def build_summary(apps, chrome_data, terms):
@@ -84,14 +94,23 @@ def restore_snapshot(snap, move_windows=True, open_terminals=True, open_chrome=T
 
     if open_chrome:
         tabs = snap.get("chrome", {}).get("tabs", [])
-        urls = [t["url"] for t in tabs if t.get("url")]
-        if urls:
+        by_profile = {}
+        for t in tabs:
+            if t.get("url"):
+                by_profile.setdefault(t.get("profile") or "", []).append(t["url"])
+        if by_profile:
             exe = chrome_mod.chrome_exe_hint()
+            opened = []
             try:
-                # One Chrome process for all URLs (low power) instead of N launches.
-                subprocess.Popen([exe, *urls[:30]],
-                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                report["chrome"] = f"opened {min(len(urls), 30)} urls"
+                # One Chrome process per profile (low power) instead of N launches.
+                for profile, urls in list(by_profile.items())[:5]:
+                    cmd = [exe, *urls[:30]]
+                    if profile and profile != "Default":
+                        cmd.append(f"--profile-directory={profile}")
+                    subprocess.Popen(cmd,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    opened.append(f"{profile or 'Default'}:{min(len(urls), 30)}")
+                report["chrome"] = "opened " + ", ".join(opened)
             except Exception as e:
                 report["chrome"] = f"failed: {e}"
         else:

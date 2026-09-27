@@ -2,8 +2,14 @@
 
 UI contract (you own tkinter+pystray, this package owns data):
   collect() -> full snapshot dict (apps, chrome, terminals, summary)
+    apps: one row per window; group by exe/name in UI, show 'label'
+      (title + WxH @ X,Y) to pick instances apart.
+    chrome: flat 'tabs' (each with profile+port) + grouped
+      'instances[{port, profile, cdp_available, tabs}]' for per-instance
+      checkbox groups. keep_tabs uses flat-list indices.
   save_filtered(snap, keep, meta) -> Path  (keep = indices/urls UI selected)
   list_names() / load_snapshot(name) / restore_snapshot(snap)
+    restore reopens one Chrome process per profile when known.
 """
 from .snapshot import build_summary, collect_snapshot, restore_snapshot
 from .store import list_snapshots, load, save
