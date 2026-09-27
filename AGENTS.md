@@ -1,9 +1,10 @@
 # AGENTS.md
 
-`prevstate` (previous state). Python 3.12, Windows-only backend. Deps in `requirements.txt`: `psutil`, `pywin32` (backend); `pystray`, `pillow` (UI side, owned by user).
+`prevstate` (previous state). Python 3.12, Windows-only. Deps in `requirements.txt`: `psutil`, `pywin32` (backend); `pystray`, `pillow` (tray icon).
 
 ## Commands
 - Setup: `pip install -r requirements.txt`
+- App (tray): `python -m prevstate` — Set new environment / Restore prevstate / Quit. Win+Shift+R opens Restore if the optional `keyboard` package is installed.
 - Snapshot: `python -m prevstate.cli save [--doing X --done Y --todo Z]`
 - List/show: `python -m prevstate.cli list` / `show <file> [--json]`
 - Restore: `python -m prevstate.cli restore <file> [--no-chrome --no-terminals]`
@@ -15,9 +16,10 @@
 - `prevstate/chrome.py`: discovers `--remote-debugging-port`/`--profile-directory` from chrome processes, one stdlib HTTP call per port. Returns flat `tabs` (each tagged `profile`+`port`) + grouped `instances[]`; unreachable ports get `cdp_available=false` (CDP OFF badge). Start each profile's Chrome with its own debug port or its URLs are invisible.
 - `prevstate/terminal.py`: only terminal PIDs get `environ()` (expensive). Venv re-activation via `activate_command()` per shell.
 - `prevstate/snapshot.py:build_summary`: auto summary; `doing/done/todo` filled by UI.
-- `prevstate/__init__.py`: stable UI contract — `collect()`, `save_filtered(snap, keep_apps, keep_tabs, keep_terminals, ...)`, `list_names()`, `load_snapshot()`, `restore_snapshot()`. UI (tkinter+pystray tray: Set new environment / Restore prevstate / Quit) is user-owned; keep backend UI-free.
+- `prevstate/__init__.py`: stable UI/backend contract — `collect()`, `save_filtered(snap, keep_apps, keep_tabs, keep_terminals, ...)`, `list_names()`, `load_snapshot()`, `restore_snapshot()`. `prevstate/ui.py` (tkinter setup/restore windows, import-safe, threaded collect via queue+poll) and `prevstate/tray.py` (pystray, runtime-drawn icon) build on it; `store.delete()` backs UI delete.
 - Restore relaunches (fresh shells + one Chrome process), never resumes in-memory state. PIDs stale — window moves best-effort.
 
 ## Rules
 - Reuse stdlib/`psutil`/`pywin32` before custom code. Keep imports lazy and single-pass.
-- Don't touch UI files; backend contract lives in `prevstate/__init__.py` + `cli.py`.
+- `ui.py` must stay import-safe (no Tk objects at import); backend calls from threads via queue + `after()` poll, never direct widget access.
+- Backend contract lives in `prevstate/__init__.py` + `cli.py`; UI builds on it, never duplicates collect/save logic.

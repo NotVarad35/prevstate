@@ -12,6 +12,16 @@ Requires Python 3.12 on Windows. Backend deps: `psutil`, `pywin32`. UI deps (you
 
 ## Usage
 
+Tray app (matches `design/prevstate-suite-canvas.png`):
+
+```sh
+python -m prevstate
+```
+
+Right-click the tray icon → **Set a new environment** (tick apps/tabs/terminals, name it, Save) or **Restore prevstate** (pick a snapshot, Restore/Delete). `Win+Shift+R` opens Restore when the optional `keyboard` package is installed.
+
+CLI (same backend, no window):
+
 ```sh
 python -m prevstate.cli save [--doing X --done Y --todo Z] [--out name.json]
 python -m prevstate.cli list

@@ -80,3 +80,18 @@ def prune(retain=RETAIN):
             old.unlink()
         except Exception:
             pass
+
+
+def delete(name_or_path):
+    """Delete one snapshot. Returns True if a file was removed."""
+    p = snapshot_path(name_or_path)
+    targets = [p, legacy_dir() / Path(name_or_path).name]
+    removed = False
+    for t in targets:
+        try:
+            if t.is_file():
+                t.unlink()
+                removed = True
+        except Exception:
+            continue
+    return removed
