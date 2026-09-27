@@ -18,7 +18,7 @@ Build it yourself (needs `pip install pyinstaller`):
 pyinstaller --noconfirm --clean --onefile --windowed --name prevstate --icon assets\icon.ico --hidden-import win32gui --hidden-import win32process --hidden-import win32api --collect-all pystray --collect-all PIL prevstate\__main__.py
 ```
 
-Run `dist\prevstate.exe` — it lives in the tray. `dist/` and `build/` are gitignored; `assets/icon.ico` and `prevstate.spec` are committed so the build is reproducible.
+Run `dist\prevstate.exe` — it lives in the tray. `dist/`, `build/`, and `*.spec` are gitignored; `assets/icon.ico` is committed and the command above makes the build reproducible.
 
 ## Usage
 
