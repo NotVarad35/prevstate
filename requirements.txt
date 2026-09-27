@@ -1,0 +1,5 @@
+psutil>=6.0
+pywin32>=300; sys_platform == "win32"
+# UI (you own this side): tray + windows
+pystray>=0.19
+pillow>=10.0

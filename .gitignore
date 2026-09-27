@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env/
+
+# Build / dist
+build/
+dist/
+*.egg-info/
+
+# OS / editors
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+
+# Local runs (snapshots live in %LOCALAPPDATA%\prevstate, not the repo)
+*.log
